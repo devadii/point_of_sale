@@ -136,10 +136,12 @@ int main() {
 			bool loginProcess;
 			do {
 				string username, password;
+				
 				cout << "Username: ";
 				cin >> username;
 				cout << "Password: ";
 				cin >> password;
+				
 				if (loginUser(username, password)) {
 					loginProcess = false;
 
@@ -168,15 +170,86 @@ int main() {
 
 							Inventory newProduct;
 							newProduct.id = 0;
-							cout << "Enter Product Name: "; cin >> newProduct.name;
-							cout << "Enter Product Price: "; cin >> newProduct.price;
-							cout << "Enter Product Quantity: "; cin >> newProduct.quantity;
-							cout << endl;
+							char name[30];
+							string price; 
+							string quantity;
+							bool addingProcess = true;
+							bool mainPage = false;
 
-							addProduct(shopInventory, newProduct);
-							checkForStock(shopInventory);
-							displayInventory(shopInventory, "admin");
+							do {
+								cout << "Enter (cancel) in any field to go back || Enter Product Name: ";
+								cin.ignore();
+								cin.getline(name, 30);
 
+								if (name == "cancel") {
+									mainPage = true;
+									break;
+								}
+								
+								// Validating Price
+								bool priceProcess = true;
+								bool subPage = false;
+
+								do {
+									cout << "Enter Product Price: "; cin >> price;
+
+									if (price == "cancel") {
+										subPage = true;
+										break;
+									}
+									else if (checkForNoInt(price)) {
+										cout << "----- Invalid Product Price -----" << endl << endl;
+									}
+									else if (stoi(price) < 1) {
+										cout << "----- Invalid Product Price -----" << endl << endl;
+									}
+									else {
+										priceProcess = false;
+									}
+								} while (priceProcess);
+
+								if (subPage == true) {
+									mainPage = true;
+									break;
+								}
+
+								// validatingQuantity
+								bool quantityProcess = true;
+								do {
+									cout << "Enter Product Quantity: "; cin >> quantity;
+									if (quantity == "cancel") {
+										subPage = true;
+										break;
+									}
+									else if (checkForNoInt(quantity)) {
+										cout << "----- Invalid Product Quaantity -----" << endl << endl;
+									}
+									else if (stoi(quantity) < 1) {
+										cout << "----- Invalid Product Quantity -----" << endl << endl;
+									} else{
+										quantityProcess = false;
+									}
+
+									cout << endl;
+								} while (quantityProcess);
+
+								if (subPage == true) {
+									mainPage = true;
+									break;
+								}
+								break;
+							} while (addingProcess);
+
+							if (mainPage == false) {
+								newProduct.name = name;
+								newProduct.quantity = stoi(quantity);
+								newProduct.price = stoi(price);
+
+								addProduct(shopInventory, newProduct);
+								checkForStock(shopInventory);
+								displayInventory(shopInventory, "admin");
+							}
+							
 						}
 						else if (toLowerString(process) == "del") {
 							// delete Product
@@ -322,6 +395,58 @@ int main() {
 
 			// Customer Panel ...............................................
 
+			cout << "---------- Welcome Sir, Good to See You Here ----------" << endl;
+			cout << "We have these products right now. Which product do you want to buy. For main page endter (M)." << endl << endl;
+
+			int gettingIdProcess = true;
+			bool onMainPage = false;
+			string productId;
+			string productQuantity;
+
+			do {
+				cout << "Enter Product ID: "; cin >> productId;
+				cout << endl;
+				if (productId == "back") {
+					onMainPage = true;
+					break;
+				}
+				if (checkForNoInt(productId)) {
+					cout << "----- Invalid Product Id -----" << endl << endl;
+				}
+				else {
+					if (stoi(productId) < 1 || stoi(productId) > 10) {
+						cout << "----- No Product With Entered Id -----" << endl << endl;
+					}
+					else {
+						gettingIdProcess = false;
+					}
+				}
+			} while (gettingIdProcess);
+
+			// Cart Process
+			
+			// Getting Valid Quantity
+			
+			bool gettingQuantityProcess = true;
+			do {
+				cout << "Product Quantity: "; cin >> productQuantity; cout << endl;
+				if (checkForNoInt(productQuantity)) {
+					cout << "----- Invalid Product Quantity -----" << endl << endl;
+				}
+				else if (stoi(productQuantity) < 1) {
+					cout << "----- Invalid Product Quantity -----" << endl << endl;
+				}
+				else if (stoi(productQuantity) > shopInventory[stoi(productId)].quantity) {
+					cout << "----- We Dont Have Enough Products -----" << endl << endl;
+				}
+				else {
+					gettingQuantityProcess = false;
+				}
+				
+			} while (gettingQuantityProcess);
+
+			
+			// Customer Panel ...............................................
 		}
 		else if (toLowerString(user) == "x") {
 			shopOpen = false;
@@ -334,8 +459,8 @@ int main() {
 
 	// Testing
 
-	//checkForStock(shopInventory);
-	//displayInventory(shopInventory, "admin");
+	checkForStock(shopInventory);
+	displayInventory(shopInventory, "admin");
 
 	return 0;
 }
