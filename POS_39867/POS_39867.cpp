@@ -14,6 +14,14 @@ struct Inventory {
 	string inStock;
 };
 
+struct Cart {
+	string name;
+	int price;
+	int quantity;
+	int total;
+};
+
+
 //  Featured Functions
 
 bool loginUser(string username, string password) {
@@ -53,6 +61,20 @@ void displayInventory(struct Inventory data[10], string user) {
 			}
 		}
 	}
+	cout << endl;
+}
+
+void displayCart(struct Cart data[10]) {
+	int total = 0;
+	cout << setw(25) << "Products Name" << setw(9) << "Price" << setw(12) << "Quantity" << setw(10) << "Total" << endl << endl;
+	for (int i = 0; i < 10; i++) {
+		if (data[i].name != "null") {
+			cout << setw(25) << data[i].name << setw(9) << data[i].price << setw(12) << data[i].quantity << setw(10) << data[i].total << endl;
+			total = total + data[i].total;
+		}
+	}
+	cout << setw(25) << "" << setw(9) << "" << setw(12) <<  "Total: " << setw(10) << total << endl;
+
 	cout << endl;
 }
 
@@ -115,19 +137,25 @@ int main() {
 		{10, "empty", 0, 0},
 	};
 
+	Cart customerCart[10];
+
+	// Initialize Cart Arr;
+	for (int i = 0; i < 10; i++) {
+		customerCart[i].name = "null";
+	}
+
 	bool shopOpen = true;
-	string user = "a";
+	string user = "c";
 
 	cout << "Welcome to JOHN's Mart........................." << endl;
 	cout << "..............................................." << endl;
 
 	while (shopOpen) {
 
-		/*
 		cout << "Enter (A) For Admin || (C) For Customer || (X) to Close Shop: ";
 		cin >> user;
 		cout << endl;
-		*/
+		
 
 		if (toLowerString(user) == "a") {
 
@@ -253,12 +281,34 @@ int main() {
 						}
 						else if (toLowerString(process) == "del") {
 							// delete Product
-
-							int deleteId;
+							// Validating Price
+							bool delProcess = true;
+							bool subPage = false;
+							string deleteId;
+							checkForStock(shopInventory);
 							displayInventory(shopInventory, "admin");
-							cout << "Enter Product ID: "; cin >> deleteId;
-							cout << endl;
-							deleteProduct(shopInventory, deleteId);
+
+							do {
+								cout << "Enter Product ID: "; cin >> deleteId;
+								cout << endl;
+
+								if (deleteId == "cancel") {
+									subPage = true;
+									break;
+								}
+								else if (checkForNoInt(deleteId)) {
+									cout << "----- Invalid Product Id -----" << endl << endl;
+								}
+								else if (stoi(deleteId) < 1) {
+									cout << "----- Invalid Product Id -----" << endl << endl;
+								}
+								else {
+									delProcess = false;
+								}
+							} while (delProcess);
+
+							
+							deleteProduct(shopInventory, stoi(deleteId));
 							checkForStock(shopInventory);
 							displayInventory(shopInventory, "admin");
 						}
@@ -396,57 +446,123 @@ int main() {
 			// Customer Panel ...............................................
 
 			cout << "---------- Welcome Sir, Good to See You Here ----------" << endl;
-			cout << "We have these products right now. Which product do you want to buy. For main page endter (M)." << endl << endl;
+			cout << "---------- Enter CANCEL in any field to jump to main menu." << endl;
+			cout << "We have these products right now. Which product do you want to buy." << endl << endl;
 
-			int gettingIdProcess = true;
-			bool onMainPage = false;
-			string productId;
-			string productQuantity;
+			bool moreProducts = false;
+			bool purchaseStart = 0;
 
-			do {
-				cout << "Enter Product ID: "; cin >> productId;
-				cout << endl;
-				if (productId == "back") {
-					onMainPage = true;
-					break;
-				}
-				if (checkForNoInt(productId)) {
-					cout << "----- Invalid Product Id -----" << endl << endl;
-				}
-				else {
-					if (stoi(productId) < 1 || stoi(productId) > 10) {
-						cout << "----- No Product With Entered Id -----" << endl << endl;
+			while (true)
+			{
+				checkForStock(shopInventory);
+				displayInventory(shopInventory, "customer");
+			
+				int gettingIdProcess = true;
+				bool onMainPage = false;
+				string productId;
+				string productQuantity;
+
+				do {
+					cout << "Enter Product ID: "; cin >> productId;
+					cout << endl;
+					if (productId == "cancel") {
+						onMainPage = true;
+						break;
+					}
+					if (checkForNoInt(productId)) {
+						cout << "----- Invalid Product Id -----" << endl << endl;
 					}
 					else {
-						gettingIdProcess = false;
+						if (stoi(productId) < 1 || stoi(productId) > 10) {
+							cout << "----- No Product With Entered Id -----" << endl << endl;
+						}
+						else {
+							gettingIdProcess = false;
+						}
+					}
+				} while (gettingIdProcess);
+
+				if (onMainPage) break;
+
+				// Getting Product
+				Inventory currentProduct;
+				for (int i = 0; i < 10; i++) {
+					if (shopInventory[i].id == stoi(productId)) {
+						currentProduct = shopInventory[i];
 					}
 				}
-			} while (gettingIdProcess);
 
-			// Cart Process
-			
-			// Getting Valid Quantity
-			
-			bool gettingQuantityProcess = true;
-			do {
-				cout << "Product Quantity: "; cin >> productQuantity; cout << endl;
-				if (checkForNoInt(productQuantity)) {
-					cout << "----- Invalid Product Quantity -----" << endl << endl;
-				}
-				else if (stoi(productQuantity) < 1) {
-					cout << "----- Invalid Product Quantity -----" << endl << endl;
-				}
-				else if (stoi(productQuantity) > shopInventory[stoi(productId)].quantity) {
-					cout << "----- We Dont Have Enough Products -----" << endl << endl;
+				// Getting Valid Quantity
+
+				bool gettingQuantityProcess = true;
+				do {
+					cout << "Product Quantity: "; cin >> productQuantity; cout << endl;
+					if (productQuantity == "cancel") {
+						onMainPage = true;
+						break;
+					}
+					if (checkForNoInt(productQuantity)) {
+						cout << "----- Invalid Product Quantity -----" << endl << endl;
+					}
+					else if (stoi(productQuantity) < 1) {
+						cout << "----- Invalid Product Quantity -----" << endl << endl;
+					}
+					else if (stoi(productQuantity) > currentProduct.quantity) {
+						cout << "----- We Dont Have Enough Products -----" << endl << endl;
+					}
+					else {
+						gettingQuantityProcess = false;
+					}
+
+				} while (gettingQuantityProcess);
+
+				if (onMainPage) break;
+
+				int productTotal = stoi(productQuantity) * currentProduct.price;
+
+				// Add to Cart;
+
+				customerCart[purchaseStart].name = currentProduct.name;
+				customerCart[purchaseStart].price = currentProduct.price;
+				customerCart[purchaseStart].quantity = stoi(productQuantity);
+				customerCart[purchaseStart].total = productTotal;
+				purchaseStart++;
+				moreProducts = true;
+
+				cout << "----- Cart -----" << endl;
+				displayCart(customerCart);
+
+				string finalCommand;
+				do {
+				cout << "Enter (A) for adding more products || (C) to jump to checkout page: "; cin >> finalCommand; 
+				if (toLowerString(finalCommand) != "a" && toLowerString(finalCommand) != "c") {
+					cout << endl << "----- Invalid Commad -----" << endl << endl;
 				}
 				else {
-					gettingQuantityProcess = false;
+					break;
 				}
+				 
+				} while (true); 
 				
-			} while (gettingQuantityProcess);
+				if (finalCommand == "c") {
+				// Finalize Purchase
+					char customerName[30];
+					cout << "Your Good Name: ";
+					cin.ignore();
+					cin.getline(customerName, 30);
+					cout << endl;
+					
+					// display invoice
+
+
+				}
+
 
 			
-			// Customer Panel ...............................................
+				
+			}
+			
+			// Customer Panel End ...............................................
 		}
 		else if (toLowerString(user) == "x") {
 			shopOpen = false;
