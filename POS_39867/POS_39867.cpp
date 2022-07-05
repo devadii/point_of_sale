@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <iomanip>
 #include <string>
 
@@ -21,6 +21,12 @@ struct Cart {
 	int total;
 };
 
+struct Invoice {
+	int id;
+	string name;
+	int payment;
+	string status;
+};
 
 //  Featured Functions
 
@@ -73,10 +79,22 @@ void displayCart(struct Cart data[10]) {
 			total = total + data[i].total;
 		}
 	}
+	cout << endl;
 	cout << setw(25) << "" << setw(9) << "" << setw(12) <<  "Total: " << setw(10) << total << endl;
-
 	cout << endl;
 }
+
+void displayInvoice(struct Invoice data[10]) {
+	cout << setw(20) << "Customer Name" << setw(9) << "Payment" << setw(10) << "Status"  << endl << endl;
+	for (int i = 0; i < 10; i++) {
+		if (data[i].name != "null") {
+			cout << setw(20) << data[i].name << setw(9) << data[i].payment << setw(10) << data[i].status  << endl;
+		}
+	}
+	cout << endl;
+
+}
+
 
 void addProduct(struct Inventory data[10], struct Inventory product) {
 	for (int i = 0; i < 10; i++) {
@@ -120,6 +138,19 @@ bool checkForNoInt(string name) {
 	}
 	return false;
 }
+
+void inventortSorter(struct Inventory data[10], struct Cart cart[10]) {
+	for (int i = 0; i < 10; i++) {
+		if (cart[i].name != "null") {
+			for (int j = 0; j < 10; j++) {
+				if (cart[i].name == data[j].name) {
+					data[j].quantity = data[j].quantity - cart[i].quantity;
+				}
+			}
+		}
+	}
+}
+
 // Main Function
 
 int main() {
@@ -136,16 +167,20 @@ int main() {
 		{9, "empty", 0, 0},
 		{10, "empty", 0, 0},
 	};
-
+	
 	Cart customerCart[10];
+	Invoice invoices[10];
 
 	// Initialize Cart Arr;
 	for (int i = 0; i < 10; i++) {
 		customerCart[i].name = "null";
+		invoices[i].id = i + 1;
+		invoices[i].name = "null";
 	}
 
 	bool shopOpen = true;
 	string user = "c";
+	int invCount = 0;
 
 	cout << "Welcome to JOHN's Mart........................." << endl;
 	cout << "..............................................." << endl;
@@ -534,7 +569,7 @@ int main() {
 
 				string finalCommand;
 				do {
-				cout << "Enter (A) for adding more products || (C) to jump to checkout page: "; cin >> finalCommand; 
+					cout << "Enter (A) for adding more products || (C) to jump to checkout page: "; cin >> finalCommand; cout << endl;
 				if (toLowerString(finalCommand) != "a" && toLowerString(finalCommand) != "c") {
 					cout << endl << "----- Invalid Commad -----" << endl << endl;
 				}
@@ -551,9 +586,55 @@ int main() {
 					cin.ignore();
 					cin.getline(customerName, 30);
 					cout << endl;
-					
+				
 					// display invoice
+					cout << "##########################################################################" << endl;
+					cout << "##########################################################################" << endl;
+					cout << "------------------------------ Your Invoice ------------------------------" << endl << endl;
+					cout << "Customer's Name: " << customerName << "    " << "Shopname: John's Mart" << endl << endl;
+					cout << "Shoping Details -----" << endl << endl;
+					displayCart(customerCart);
+					cout << "##########################################################################" << endl;
+					cout << "##########################################################################" << endl << endl;
 
+					// confirm purchase
+					string confirmProcess;
+					do {
+						cout << "Enter (C) for Confirm || (X) to cancel purchase: "; cin >> confirmProcess; cout << endl;
+						if (toLowerString(confirmProcess) != "x" && toLowerString(confirmProcess) != "c") {
+							cout << endl << "----- Invalid Commad -----" << endl << endl;
+						}
+						else {
+							break;
+						}
+
+					} while (true);
+					
+					if (confirmProcess == "c") {
+						cout << "🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️" << endl;
+						cout << "🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️" << endl << endl;
+						cout << "Here is you stuff......." << endl;
+						cout << "Thanks ......." << endl << endl;
+						cout << "🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️" << endl;
+						cout << "🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️🛍️" << endl << endl;
+						for (int i = 0; i < 10; i++) {
+							invoices[invCount].name = customerName;
+							invoices[invCount].payment = customerCart->total;
+							invoices[invCount].status = "paid";
+						}
+						invCount++;
+						inventortSorter(shopInventory, customerCart);
+						for (int i = 0; i < 10; i++) {
+							customerCart[i].name = "null";
+						}
+						displayInvoice(invoices);
+
+					}
+					else {
+						for (int i = 0; i < 10; i++) {
+							customerCart[i].name = "null";
+						}
+					}
 
 				}
 
